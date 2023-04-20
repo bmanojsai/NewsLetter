@@ -2,16 +2,23 @@ const playwright = require("playwright");
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const { PDFDocument, StandardFonts, PDFAnnotation } = require("pdf-lib");
+const FormData = require("form-data");
+const { PDFDocument, StandardFonts } = require("pdf-lib");
 
+//function to launch the website, get article details and generate pdf
 const launchWebsite = async () => {
+
+  //launches a headless browser
   const browser = await playwright.chromium.launch({
     headless: true,
   });
 
+  //opens the given url in a new tab
   const page = await browser.newPage();
   await page.goto("https://stackoverflow.blog/");
 
+
+  //gets all the required article data using selectors from the page
   const getAllArticleDetails = async () => {
     const AllArticles = await page.$eval("#content", (content) => {
       const data = [];
@@ -50,6 +57,8 @@ const launchWebsite = async () => {
     return AllArticles;
   };
 
+
+  //function to download images to /images folder based on url given and returns the image name
   const downloadImages = async (imageUrl, imageName, tag) => {
     const response = await axios.get(imageUrl, { responseType: "arraybuffer" });
 
@@ -58,18 +67,22 @@ const launchWebsite = async () => {
     return `images/${imageName}.${tag}`;
   };
 
+
+  //generates the imageName for article Image (not the author image)
   const getArticleImageName = (imageUrl) => {
     const abc = imageUrl.split("/");
 
     return abc[abc.length - 1].split(".")[0];
   };
 
+  //empty the /images folder so that updated images will be downloaded for new pdf
   const clearImages = async (directory = "images") => {
     for (const image of await fs.readdirSync(directory)) {
       await fs.unlinkSync(path.join(directory, image));
     }
   };
 
+  //returns the current date in required format to print it in pdf
   const getFormattedDate = () => {
     const date = new Date();
 
@@ -78,12 +91,14 @@ const launchWebsite = async () => {
     }/${date.getFullYear()}`;
   };
 
+  //find textwidth based on textlength, fontsize
   const getTextWidth = (text, fontSize) => {
     // This is a very rough approximation of text width.
     // For more accurate results, you can use a library that can measure text width.
     return text.length * fontSize * 0.6;
   };
 
+  //function to divide long string into multiple lines based on width availble to display.
   const splitTextIntoLines = (text, maxWidth, fontSize) => {
     const words = text.split(" ");
     const lines = [];
@@ -104,6 +119,7 @@ const launchWebsite = async () => {
     return lines;
   };
 
+  //function to divide link into multiple lines
   const splitLinkIntoLines = (text, maxWidth, fontSize) => {
     const lines = [];
 
@@ -123,6 +139,7 @@ const launchWebsite = async () => {
     return lines;
   };
 
+  //generates pdf based on the article data provided and store it in root folder with file name "output.pdf"
   const generatePDF = async (data) => {
     const pdfDoc = await PDFDocument.create();
 
@@ -404,8 +421,45 @@ const launchWebsite = async () => {
 
   console.log("pdf generated succesfully!");
 
+
+  //once pdf is generated. it will wait for 5 sec and closes the headless browser.
   await page.waitForTimeout(5000);
   await page.close();
 };
 
-launchWebsite();
+//function to send pdf to email server.
+const sendEmail = async (emailsList) => {
+
+  //generates updated pdf
+  await launchWebsite();
+
+  const form = new FormData();
+
+  form.append("toMails", emailsList.join(","));
+  form.append("subject", "Latest Stackoverflow blogs");
+  form.append(
+    "body",
+    "Your daily dose of Stackoverflow articles are waiting for you. Check out the attachment!"
+  );
+  form.append("attachment", fs.createReadStream("./output.pdf"));
+
+  try {
+    await axios.post(
+      "https://127.0.0.1:9001/v1/mail-server/send/bulk-mail",
+      form,
+      {
+        "Content-Type": "multipart/form-data",
+      }
+    );
+    console.log("Mail Sent!!!");
+  } catch (err) {
+    console.log("Error while making a post api call", err.message);
+  }
+};
+
+const emailsList = [
+  "manojsaibellamkonda@gmail.com",
+  "manojsai.bellamkonda@bounteous.com",
+];
+
+sendEmail(emailsList);

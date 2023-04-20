@@ -1,0 +1,12 @@
+# downloaded images
+*.png
+*.jpeg
+
+# generated pdf
+*.pdf
+
+# node.js
+node_modules/
+
+# vscode settings file
+settings.json
