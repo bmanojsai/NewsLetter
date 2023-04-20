@@ -6,10 +6,10 @@ This is a mini node project to genrate a pdf consisting of article details from 
 
 This project uses the following npm packages along with node package.
 
-playwright - for webscrapping
-axios - for api call
-fs - for file handling like downloading a images,pdf etc
-path - for combining paths
-form-data - to generate and send the pdf through a post api call in multipart/form-data format.
+playwright - for webscrapping<br>
+axios - for api call<br>
+fs - for file handling like downloading a images,pdf etc<br>
+path - for combining paths<br>
+form-data - to generate and send the pdf through a post api call in multipart/form-data format.<br>
 
 The email server is located in the following docker => https://hub.docker.com/r/giribabu2000/mail-server
