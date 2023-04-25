@@ -428,10 +428,10 @@ const launchWebsite = async () => {
 };
 
 //function to send pdf to email server.
-const sendEmail = async (emailsList) => {
+const sendEmail = async (emailsList, testing = false) => {
 
-  //generates updated pdf
-  await launchWebsite();
+  //generates updated pdfonlyt if it is real and not testing environment.
+  if(!testing) await launchWebsite();
 
   const form = new FormData();
 
@@ -463,3 +463,5 @@ const emailsList = [
 ];
 
 sendEmail(emailsList);
+
+module.exports = { launchWebsite, sendEmail };
