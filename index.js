@@ -7,7 +7,6 @@ const { PDFDocument, StandardFonts } = require("pdf-lib");
 
 //function to launch the website, get article details and generate pdf
 const launchWebsite = async () => {
-
   //launches a headless browser
   const browser = await playwright.chromium.launch({
     headless: true,
@@ -16,7 +15,6 @@ const launchWebsite = async () => {
   //opens the given url in a new tab
   const page = await browser.newPage();
   await page.goto("https://stackoverflow.blog/");
-
 
   //gets all the required article data using selectors from the page
   const getAllArticleDetails = async () => {
@@ -57,7 +55,6 @@ const launchWebsite = async () => {
     return AllArticles;
   };
 
-
   //function to download images to /images folder based on url given and returns the image name
   const downloadImages = async (imageUrl, imageName, tag) => {
     const response = await axios.get(imageUrl, { responseType: "arraybuffer" });
@@ -66,7 +63,6 @@ const launchWebsite = async () => {
 
     return `images/${imageName}.${tag}`;
   };
-
 
   //generates the imageName for article Image (not the author image)
   const getArticleImageName = (imageUrl) => {
@@ -421,17 +417,15 @@ const launchWebsite = async () => {
 
   console.log("pdf generated succesfully!");
 
-
   //once pdf is generated. it will wait for 5 sec and closes the headless browser.
   await page.waitForTimeout(5000);
   await page.close();
 };
 
 //function to send pdf to email server.
-const sendEmail = async (emailsList, testing = false) => {
-
+const sendEmail = async (emailsList, launchTheWebsite) => {
   //generates updated pdfonlyt if it is real and not testing environment.
-  if(!testing) await launchWebsite();
+  await launchTheWebsite();
 
   const form = new FormData();
 
@@ -462,6 +456,6 @@ const emailsList = [
   "manojsai.bellamkonda@bounteous.com",
 ];
 
-sendEmail(emailsList);
+sendEmail(emailsList, launchWebsite);
 
 module.exports = { launchWebsite, sendEmail };
