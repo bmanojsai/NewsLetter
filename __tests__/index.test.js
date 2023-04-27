@@ -6,6 +6,8 @@ jest.mock("axios");
 jest.mock("fs");
 
 describe("sendEmail() tests", () => {
+  const launchTheWebsite = jest.fn();
+
   beforeEach(() => {
     jest.resetAllMocks();
   });
@@ -17,9 +19,9 @@ describe("sendEmail() tests", () => {
 
     const emails = ["email1@gmail.com", "email2@gmail.com"];
 
-    const launchTheWebsite = jest.fn();
-
     await sendEmail(emails, launchTheWebsite);
+
+    expect(launchTheWebsite).toHaveBeenCalled();
 
     expect(axios.post).toHaveBeenCalledWith(
       "https://127.0.0.1:9001/v1/mail-server/send/bulk-mail",
@@ -37,9 +39,9 @@ describe("sendEmail() tests", () => {
 
     const emails = ["email1@gmail.com", "email2@gmail.com"];
 
-    const launchTheWebsite = jest.fn();
-
     await sendEmail(emails, launchTheWebsite);
+
+    expect(launchTheWebsite).toHaveBeenCalled();
 
     expect(axios.post).toHaveBeenCalledWith(
       "https://127.0.0.1:9001/v1/mail-server/send/bulk-mail",
